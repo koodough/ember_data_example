@@ -1,8 +1,9 @@
 App.Contact  = DS.Model.extend({
-  firstName: DS.attr('string'),
-  lastName:  DS.attr('string'),
-  email:     DS.attr('string'),
-  notes:     DS.attr('string'),
+  firstName:    DS.attr('string'),
+  lastName:     DS.attr('string'),
+  email:        DS.attr('string'),
+  notes:        DS.attr('string'),
+  phoneNumbers: DS.hasMany('App.PhoneNumber'),
 
   fullName: function() {
     var firstName = this.get('firstName'),

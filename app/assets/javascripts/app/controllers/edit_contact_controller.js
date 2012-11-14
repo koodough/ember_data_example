@@ -1,13 +1,35 @@
-App.EditContactController = Em.Controller.extend({
-  content: null,
+App.EditContactController = Em.ObjectController.extend({
 
   enterEditing: function() {
     this.transaction = this.get('store').transaction();
     if (this.get('content.id')) {
       this.transaction.add(this.get('content'));
+      var phoneNumbers = this.get('phoneNumbers');
+      if (phoneNumbers.get('isLoaded')) {
+        this._addPhoneNumbersToTransaction();
+      } else {
+        phoneNumbers.addObserver('isLoaded', this, function(){
+          this._addPhoneNumbersToTransaction();
+        })
+      }
     } else {
       this.set('content', this.transaction.createRecord(App.Contact, {}));
     }
+  },
+
+  addNumber: function(){
+    var 
+      self = this,
+      phoneNumber = this.get('phoneNumbers').createRecord({number:0}, this.transaction);
+    
+    phoneNumber.one('didCreate', function(phoneNumber){
+      Ember.run.next(function(){
+        var transaction=self.get('store').transaction();
+        transaction.add(phoneNumber);
+        phoneNumber.set('contact', self);
+        transaction.commit();
+      });
+    });
   },
 
   exitEditing: function() {
@@ -36,5 +58,12 @@ App.EditContactController = Em.Controller.extend({
 
   showRecord: function() {
     App.router.transitionTo('contacts.contact.index', this.get('content'));
+  },
+
+  _addPhoneNumbersToTransaction: function() {
+    var self = this;
+    this.get('phoneNumbers').forEach(function (phoneNumber) {
+      self.transaction.add(phoneNumber);
+    });
   }
 });
